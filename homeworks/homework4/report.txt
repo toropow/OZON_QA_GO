@@ -1,0 +1,45 @@
+newman
+
+devices
+
+❏ api/v1/devices / {device Id}
+↳ DescribeDeviceV1 - Describe a device
+  GET http://localhost:8080/api/v1/devices/1 [200 OK, 307B, 37ms]
+  ✓  Status code is 200
+
+↳ RemoveDeviceV1 - Remove a device
+  DELETE http://localhost:8080/api/v1/devices/2 [200 OK, 215B, 8ms]
+  ✓  Status code is 200
+
+↳ UpdateDeviceV1 - Update a device
+  PUT http://localhost:8080/api/v1/devices/1 [200 OK, 216B, 41ms]
+  ✓  Status code is 200
+
+❏ api/v1/devices
+↳ ListDevicesV1 - List of devices
+  GET http://localhost:8080/api/v1/devices?page=1&perPage=5 [200 OK, 682B, 6ms]
+  ✓  Status code is 200
+
+↳ CreateDeviceV1 - Create a device
+  POST http://localhost:8080/api/v1/devices [200 OK, 217B, 7ms]
+  ✓  Status code is 200
+
+┌─────────────────────────┬──────────────────┬──────────────────┐
+│                         │         executed │           failed │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              iterations │                1 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│                requests │                5 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│            test-scripts │                5 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│      prerequest-scripts │                0 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              assertions │                5 │                0 │
+├─────────────────────────┴──────────────────┴──────────────────┤
+│ total run duration: 199ms                                     │
+├───────────────────────────────────────────────────────────────┤
+│ total data received: 635B (approx)                            │
+├───────────────────────────────────────────────────────────────┤
+│ average response time: 19ms [min: 6ms, max: 41ms, s.d.: 15ms] │
+└───────────────────────────────────────────────────────────────┘
