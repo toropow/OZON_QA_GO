@@ -22,6 +22,7 @@ endif
 
 .PHONY: run
 run:
+	docker-compose -p ozon_route256 -f docker-compose.infra.yaml up -d
 	go run cmd/grpc-server/main.go
 
 .PHONY: lint
@@ -112,14 +113,14 @@ tools-version:
 
 .PHONY: dc-up
 dc-up:
-	docker-compose -p ozon_route256 up -d
+	docker-compose -p ozon_route256 -f docker-compose.infra.yaml -f docker-compose.service.yaml up -d
 
 .PHONY: dc-down
 dc-down:
-	docker-compose -p ozon_route256 down --remove-orphans -v -t0
+	docker-compose -p ozon_route256 -f docker-compose.infra.yaml -f docker-compose.service.yaml down --remove-orphans -v -t0
 
 .PHONY: dc-rebuild-reup
 dc-rebuild-reup:
 	make dc-down
-	docker-compose -p ozon_route256 up --build --force-recreate -V -d
+	docker-compose -p ozon_route256 -f docker-compose.infra.yaml -f docker-compose.service.yaml up --build --force-recreate -V -d
 
