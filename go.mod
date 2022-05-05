@@ -22,6 +22,7 @@ require (
 	github.com/pressly/goose/v3 v3.1.0
 	github.com/prometheus/client_golang v1.11.0
 	github.com/rs/zerolog v1.24.0
+	github.com/stretchr/testify v1.7.0
 	github.com/uber/jaeger-client-go v2.29.1+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	go.uber.org/zap v1.13.0
