@@ -1,0 +1,10 @@
+mode: set
+github.com/ozonmp/act-device-api/homeworks/homework9/greeter/greeter.go:8.42,11.28 2 1
+github.com/ozonmp/act-device-api/homeworks/homework9/greeter/greeter.go:20.2,21.68 2 1
+github.com/ozonmp/act-device-api/homeworks/homework9/greeter/greeter.go:11.28,13.3 1 1
+github.com/ozonmp/act-device-api/homeworks/homework9/greeter/greeter.go:13.8,13.36 1 1
+github.com/ozonmp/act-device-api/homeworks/homework9/greeter/greeter.go:13.36,15.3 1 1
+github.com/ozonmp/act-device-api/homeworks/homework9/greeter/greeter.go:15.8,15.36 1 1
+github.com/ozonmp/act-device-api/homeworks/homework9/greeter/greeter.go:15.36,17.3 1 1
+github.com/ozonmp/act-device-api/homeworks/homework9/greeter/greeter.go:17.8,17.34 1 1
+github.com/ozonmp/act-device-api/homeworks/homework9/greeter/greeter.go:17.34,19.3 1 1
