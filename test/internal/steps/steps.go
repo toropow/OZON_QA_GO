@@ -35,3 +35,25 @@ func ListDevice(conn *grpc.ClientConn, page uint64, perPage uint64) (*act_device
 
 	return listDevicesV1Response, err
 }
+
+func UpdateDevice(conn *grpc.ClientConn, userID uint64, Platform string, DeviceId uint64) (*act_device_api.UpdateDeviceV1Response, error) {
+	deviceApiClient := act_device_api.NewActDeviceApiServiceClient(conn)
+	request := &act_device_api.UpdateDeviceV1Request{
+		UserId:   userID,
+		Platform: Platform,
+		DeviceId: DeviceId,
+	}
+	updateDevicesV1Response, err := deviceApiClient.UpdateDeviceV1(context.Background(), request)
+
+	return updateDevicesV1Response, err
+}
+
+func RemoveDevice(conn *grpc.ClientConn, DeviceId uint64) (*act_device_api.RemoveDeviceV1Response, error) {
+	deviceApiClient := act_device_api.NewActDeviceApiServiceClient(conn)
+	request := &act_device_api.RemoveDeviceV1Request{
+		DeviceId: DeviceId,
+	}
+	removeDevicesV1Response, err := deviceApiClient.RemoveDeviceV1(context.Background(), request)
+
+	return removeDevicesV1Response, err
+}
