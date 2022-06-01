@@ -1,7 +1,15 @@
 image: golang:1.16-alpine
 
 stages:
+  - lint
   - test
+
+lint:
+  image: golangci/golangci-lint:v1.43
+  stage: lint
+  script:
+    - golangci-lint run -v ./...
+  allow_failure: true
 
 test:
   image: pricec/gotestsum:latest
@@ -15,3 +23,4 @@ test:
     expire_in: 1 days
     paths:
       - json-report.txt
+  allow_failure: true
