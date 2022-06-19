@@ -97,7 +97,16 @@ build-go: generate-go .build
 # ----------------------------------------------------------------
 .PHONY: docker-build
 docker-build:
-	docker-compose up -d --no-deps --build --force-recreate act-device-api
+	docker-compose -p ozon_route256 -f docker-compose.infra.yaml -f docker-compose.service.yaml up --build -d
+
+.PHONY: docker-rebuild
+docker-rebuild:
+	docker-compose -p ozon_route256 -f docker-compose.infra.yaml -f docker-compose.service.yaml up --build -d
+
+.PHONY: docker-rebuild-reup
+docker-rebuild-reup:
+	make dc-down
+	make docker-rebuild
 
 .PHONY: docker-stop
 docker-stop:
