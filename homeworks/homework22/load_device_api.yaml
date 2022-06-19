@@ -1,0 +1,65 @@
+phantom:
+  enabled: false
+  package: yandextank.plugins.Phantom
+overload:
+  enabled: true
+  package: yandextank.plugins.DataUploader
+  token_file: token.txt
+  job_name: Example_com.test
+  job_dsc: some description
+
+pandora:
+  package: yandextank.plugins.Pandora
+  enabled: true
+  pandora_cmd: files/pandora
+  config_content:
+    pools:
+      - id: HTTP pool                    # pool name (for your choice)
+        gun:
+          type: http                     # gun type
+          target: localhost:8080         # gun target
+        ammo:
+          type: http/json                     # ammo format
+          file: ./ammo_device_api.json        # ammo file path
+        result:
+          type: phout                    # report format (phout is compatible for Yandex.Tank)
+          destination: ./phout.log       # report file name
+        rps:                             # RPS scheduler - controls throughput over test
+          - type: line                     # linear growth load
+            from: 0                        # from 1 responses per second
+            to: 200                          # to 5 responses per second
+            duration: 5s                   # for 2 seconds
+          - type: const                     # linear growth load
+            ops:   200                        # from 1 responses per second
+            duration: 5s
+          - type: line                     # linear growth load
+            from: 200                        # from 1 responses per second
+            to: 400                         # to 5 responses per second
+            duration: 5s
+          - type: const                     # linear growth load
+            ops: 400                        # from 1 responses per second
+            duration: 5s
+          - type: line                     # linear growth load
+            from: 400                        # from 1 responses per second
+            to: 600                         # to 5 responses per second
+            duration: 5s
+          - type: const                     # linear growth load
+            ops: 600                        # from 1 responses per second
+            duration: 5s
+          - type: line                     # linear growth load
+            from: 600                        # from 1 responses per second
+            to: 800                          # to 5 responses per second
+            duration: 5s
+          - type: const                     # linear growth load
+            ops: 800                        # from 1 responses per second
+            duration: 5s
+          - type: line                     # linear growth load
+            from: 800                        # from 1 responses per second
+            to: 1000                          # to 5 responses per second
+            duration: 5s
+          - type: const                     # linear growth load
+            ops: 1000                        # from 1 responses per second
+            duration: 5s
+        startup:                         # startup scheduler - control the level of parallelism
+          type: once                     # start 5 instances
+          times: 60

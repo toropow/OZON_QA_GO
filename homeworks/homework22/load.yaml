@@ -1,0 +1,44 @@
+phantom:
+  enabled: false
+  package: yandextank.plugins.Phantom
+overload:
+  enabled: true
+  package: yandextank.plugins.DataUploader
+  token_file: token.txt
+  job_name: Example_com.test
+  job_dsc: some description
+
+pandora:
+  package: yandextank.plugins.Pandora
+  enabled: true
+  pandora_cmd: files/pandora
+  config_content:
+    pools:
+      - id: HTTP pool                    # pool name (for your choice)
+        gun:
+          type: http                     # gun type
+          target: example.com:80         # gun target
+        ammo:
+          type: http/json                     # ammo format
+          file: ./ammo.json               # ammo file path
+        result:
+          type: phout                    # report format (phout is compatible for Yandex.Tank)
+          destination: ./phout.log       # report file name
+        rps:                             # RPS scheduler - controls throughput over test
+          - type: line                     # linear growth load
+            from: 1                        # from 1 responses per second
+            to: 5                          # to 5 responses per second
+            duration: 10s                   # for 2 seconds
+          - type: const                     # linear growth load
+            ops:   5                        # from 1 responses per second
+            duration: 30s
+          - type: line                     # linear growth load
+            from: 5                        # from 1 responses per second
+            to: 10                          # to 5 responses per second
+            duration: 10s
+          - type: const                     # linear growth load
+            ops: 10                        # from 1 responses per second
+            duration: 30s
+        startup:                         # startup scheduler - control the level of parallelism
+          type: once                     # start 5 instances
+          times: 30
