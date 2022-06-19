@@ -1,4 +1,4 @@
-image: golang:1.16-alpine
+image: golang:1.18-alpine
 
 variables:
   ADD_DATA: 'data from vars.yml'
@@ -127,6 +127,16 @@ linter:
     - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_REF_NAME =~ /^(test|release)\/.+$/'
       when: always
     - when: never
+
+fuzz-test:
+  stage: build
+  script:
+    - go test -json ./homeworks/homework24/... -fuzz=Fuzz -fuzztime=5s >fuzz_out.json
+  artifacts:
+    paths:
+      - fuzz_out.json
+    expire_in: 1 day
+  allow_failure: true
 
 pre-commit:
   stage: build
