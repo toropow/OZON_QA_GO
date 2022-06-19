@@ -1,3 +1,6 @@
+//go:build sql_test
+// +build sql_test
+
 package homework14
 
 import (

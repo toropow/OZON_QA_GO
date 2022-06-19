@@ -1,5 +1,8 @@
 image: golang:1.16-alpine
 
+variables:
+  ADD_DATA: 'data from vars.yml'
+
 stages:
   - build
   - publish
@@ -11,102 +14,174 @@ stages:
 build:
   stage: build
   script:
-    - echo "Build"
-  only:
-    - master
-    - /^(release|hotfix|feature)\/.+$/
-
-unit:
-  stage: build
-  script:
-    - echo "Unit testing"
-  only:
-    - /^(release|test)\/.+$/
-
-linter:
-  stage: build
-  script:
-    - echo "Linter"
-  only:
-    - /^(release|test)\/.+$/
+    - apk add --update make curl git protoc protobuf protobuf-dev
+    - make deps-go
+    - make build-go
+  artifacts:
+    paths:
+      - bin/
+    expire_in: 1 day
 
 create image:
   stage: publish
   script:
     - echo "Create image for dev/stg"
-  only:
-    - master
-    - /^(release|hotfix|feature)\/.+$/
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_REF_NAME =~ /^(test)\/.+$/'
+      when: never
+    - when: on_success
 
 release image:
   stage: publish
   script:
     - echo "Create image for prod"
-  only:
-    refs:
-      - tags
-  except:
-    - /^(release|hotfix|feature|test)\/.+$/
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      when: on_success
+    - when: never
 
 development:
   stage: deploy
   script:
     - echo "Deploy to dev environment"
-  when: manual
-  only:
-    - master
-    - /^(feature)\/.+$/
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_REF_NAME =~ /^(test|release|hotfix)\/.+$/'
+      when: never
+    - when: always
 
 staging:
   stage: deploy
   script:
     - echo "Deploy to stg environment"
-  only:
-    - /^(release|hotfix)\/.+$/
+  rules:
+    - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_REF_NAME =~ /^(release|hotfix)\/.+$/'
+      when: on_success
+    - when: never
 
 staging latest:
   stage: deploy
   script:
     - echo "Update stg with last version"
-  only:
-    - master
-  except:
-    - /^(release|hotfix|feature|test)\/.+$/
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: on_success
+    - when: never
+
 
 production:
   stage: deploy
   script:
     - echo "Deploy to prod environment"
-  when: manual
-  only:
-    refs:
-      - tags
-  except:
-    - /^(release|hotfix|feature|test)\/.+$/
-
-test:
-  stage: e2e
-  script:
-    - echo "API testing on stg"
-  allow_failure: true
-  only:
-    - /^(release|test)\/.+$/
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      when: manual
+    - when: never
 
 ready to prod:
   stage: close
   script:
     - echo "Ready to prod"
-  when: manual
-  only:
-    - /^(release|hotfix)\/.+$/
+  rules:
+    - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_REF_NAME =~ /^(release|hotfix)\/.+$/'
+      when: manual
+    - when: never
 
 close release:
   stage: close
   script:
-    - echo "Ready to prod"
-  when: manual
-  only:
-    refs:
-      - tags
-  except:
-    - /^(release|hotfix|feature|test)\/.+$/
+    - echo "Close release"
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      when: manual
+    - when: never
+
+unit:
+  stage: build
+  image: pricec/gotestsum:1.16.5-1.6.4
+  script:
+    - go test -json ./homeworks/homework9/... > out.json
+    - cat out.json | gotestsum --format testname --raw-command -- cat
+  rules:
+    - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_REF_NAME =~ /^(test|release)\/.+$/'
+      when: always
+    - when: never
+  artifacts:
+    paths:
+      - out.json
+    expire_in: 1 day
+
+linter:
+  stage: build
+  image: golangci/golangci-lint:latest
+  script:
+    - golangci-lint run --new-from-rev h18
+  rules:
+    - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_REF_NAME =~ /^(test|release)\/.+$/'
+      when: always
+    - when: never
+
+pre-commit:
+  stage: build
+  image: kiwicom/pre-commit:latest
+  script:
+    - pre-commit run -a
+  rules:
+    - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_REF_NAME =~ /^(test|release)\/.+$/'
+      when: always
+    - when: never
+
+httptest:
+  stage: e2e
+  services:
+    - name: postgres:12.11-alpine3.16
+      alias: postgres
+    - name: confluentinc/cp-zookeeper:latest
+      alias: zookeeper
+    - name: confluentinc/cp-kafka:latest
+      alias: kafka
+  variables:
+    # enable network
+    FF_NETWORK_PER_BUILD: 1
+    # postgres variables
+    POSTGRES_USER: docker
+    POSTGRES_PASSWORD: docker
+    POSTGRES_DB: act_device_api
+    # zookeeper variables
+    zk_id: "1"
+    ZOOKEEPER_CLIENT_PORT: 32181
+    ZOOKEEPER_TICK_TIME: 2000
+    ZOOKEEPER_SYNC_LIMIT: 2
+    # kafka variables
+    KAFKA_ZOOKEEPER_CONNECT: "zookeeper:32181"
+    KAFKA_LISTENERS: "INTERNAL://kafka:9092,OUTSIDE://kafka:9094"
+    KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka:9092,OUTSIDE://localhost:9094"
+    KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT"
+    KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  before_script:
+    - apk add --update make curl git protoc protobuf protobuf-dev build-base
+    - make deps-go
+    - ./bin/grpc-server &
+    - sleep 5
+  script:
+    - go test -json -tags http_test ./test/test/http_test/... > out.json
+    - cat out.json
+  artifacts:
+    paths:
+      - out.json
+    expire_in: 1 day
+  allow_failure: true
+  dependencies:
+    - build
+  rules:
+    - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_REF_NAME =~ /^(test|release)\/.+$/'
+      when: always
+    - when: never
