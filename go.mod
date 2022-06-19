@@ -22,7 +22,7 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/ozonmp/act-device-api/pkg/act-device-api v0.0.0-00010101000000-000000000000
 	github.com/ozontech/allure-go/pkg/allure v0.6.0
-	github.com/ozontech/allure-go/pkg/framework v0.6.5
+	github.com/ozontech/allure-go/pkg/framework v0.6.9
 	github.com/pkg/errors v0.9.1
 	github.com/pressly/goose/v3 v3.1.0
 	github.com/prometheus/client_golang v1.11.0
