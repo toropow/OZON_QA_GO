@@ -8,6 +8,8 @@ import (
 	"github.com/ozonmp/act-device-api/internal/model"
 	"github.com/ozonmp/act-device-api/internal/pkg/logger"
 	tspb "google.golang.org/protobuf/types/known/timestamppb"
+	"math/rand"
+	"strconv"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -91,6 +93,71 @@ func (o *deviceAPI) CreateDeviceV1(
 		logger.ErrorKV(
 			ctx,
 			"CreateDeviceV1 -- failed record to event table",
+			"err", err,
+		)
+
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	cudActionsTotal.WithLabelValues("create").Inc()
+
+	logger.DebugKV(ctx, "CreateDeviceV1 -- success")
+
+	return &pb.CreateDeviceV1Response{
+		DeviceId: deviceId,
+	}, nil
+}
+
+func (o *deviceAPI) CreateDeviceRandomV1(
+	ctx context.Context,
+	req *pb.CreateDeviceV1Request,
+) (*pb.CreateDeviceV1Response, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "api.CreateDeviceV1")
+	defer span.Finish()
+
+	ctx = logger.LogLevelFromContext(ctx)
+
+	if err := req.Validate(); err != nil {
+		logger.ErrorKV(
+			ctx,
+			"CreateDeviceV2 -- invalid argument",
+			"err", err,
+		)
+
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	now := time.Now()
+
+	randId := rand.Intn(10000-100) + 100
+
+	device := &model.Device{
+		UserID:    uint64(randId),
+		Platform:  "test_" + strconv.Itoa(randId),
+		EnteredAt: &now,
+	}
+
+	deviceId, err := o.repo.CreateDevice(ctx, device)
+	if err != nil {
+		logger.ErrorKV(
+			ctx,
+			"CreateDeviceV2 -- failed",
+			"err", err,
+		)
+
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	err = o.eventRepo.Add(ctx, &model.DeviceEvent{
+		DeviceId: deviceId,
+		Type:     model.Created,
+		Status:   model.Deferred,
+		Device:   device,
+	})
+	if err != nil {
+		logger.ErrorKV(
+			ctx,
+			"CreateDeviceV2 -- failed record to event table",
 			"err", err,
 		)
 

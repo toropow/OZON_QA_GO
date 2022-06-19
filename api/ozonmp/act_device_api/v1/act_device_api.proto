@@ -17,6 +17,14 @@ service ActDeviceApiService {
       body: "*"
     };
   }
+  // CreateDeviceRandomV2 - Create random device
+  rpc CreateDeviceRandomV1(CreateDeviceV1Request) returns (CreateDeviceV1Response) {
+    option (google.api.http) = {
+      post: "/api/v2/devices"
+      body: "*"
+    };
+  }
+
   // DescribeDeviceV1 - Describe a device
   rpc DescribeDeviceV1(DescribeDeviceV1Request) returns (DescribeDeviceV1Response) {
     option (google.api.http) = {
